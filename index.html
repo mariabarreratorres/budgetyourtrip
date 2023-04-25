@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Travel</title>
+    <style>
+      form {
+        display: flex;
+        flex-direction: column;
+      }
+      input,
+      button {
+        width: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Travel expenses</h1>
+    </header>
+    <main>
+      <form action="">
+        <label for="budget">Budget</label>
+        <input required id="budget" name="budget" type="number" />
+
+        <label for="destination">Destination</label>
+        <input required id="destination" name="destination" type="text" />
+
+        <label for="transport">Transport</label>
+        <input required id="transport" name="transport" type="number" />
+
+        <label for="accommodation">Accommodation</label>
+        <input required id="accommodation" name="accommodation" type="number" />
+
+        <label for="food">Food</label>
+        <input required id="food" name="food" type="number" />
+        <br />
+        <button id="travel" type="submit">Can I travel?</button>
+      </form>
+    </main>
+    <br />
+    <section id="result"></section>
+    <script src="/script.js"></script>
+  </body>
+</html>
