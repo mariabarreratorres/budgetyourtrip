@@ -4,46 +4,85 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="estilo.css"/>
     <title>Travel</title>
     <style>
+      body {
+        padding: 32px;
+        font-family: sans-serif;
+        background-color: #27374d;
+        color: #dde6ed;
+      }
+      #main {
+        display: flex;
+      }
       form {
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        max-width: fit-content;
       }
-      input,
       button {
-        width: 200px;
+        width: fit-content;
+        padding: 8px 16px;
+        border-radius: 5px;
+        background-color: #f8f1f1;
+      }
+      button:hover {
+        cursor: pointer;
+      }
+      #results {
+        margin-left: 64px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 64px;
+      }
+      .result {
+        color: #025464;
+        padding: 16px;
+        border: 1px solid black;
+        border-radius: 5px;
+        background-color: #f8f1f1;
+        align-self: flex-start;
+        max-width: 150px;
       }
     </style>
   </head>
   <body>
     <header>
-      <h1>Travel expenses</h1>
+      <h1>
+        Where should I travel?
+        <span></span>
+      </h1>
+      <br />
     </header>
     <main>
-      <form action="">
+      <div>
         <label for="budget">Budget</label>
-        <input required id="budget" name="budget" type="number" />
-
-        <label for="destination">Destination</label>
-        <input required id="destination" name="destination" type="text" />
-
-        <label for="transport">Transport</label>
-        <input required id="transport" name="transport" type="number" />
-
-        <label for="accommodation">Accommodation</label>
-        <input required id="accommodation" name="accommodation" type="number" />
-
-        <label for="food">Food</label>
-        <input required id="food" name="food" type="number" />
         <br />
-        <button id="travel" type="submit">Can I travel?</button>
-      </form>
+        <input required id="budget" name="budget" type="number" />
+      </div>
+      <br />
+      <div id="main">
+        <form>
+          <label for="destination">Destination</label>
+          <select name="destination" id="destination"></select>
+          <br />
+
+          <label for="transport">Transport</label>
+          <input required id="transport" name="transport" type="number" />
+          <br />
+
+          <label for="accommodation">Accommodation</label>
+          <input required id="accommodation" name="accommodation" type="number" />
+          <br />
+
+          <button id="addDestination" type="submit">Add destination</button>
+          <br />
+          <button id="find" type="button">Find me a cheap trip</button>
+        </form>
+        <div id="results"></div>
+      </div>
     </main>
     <br />
-    <section id="result"></section>
     <script src="/script.js"></script>
   </body>
 </html>
