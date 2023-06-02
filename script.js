@@ -1,97 +1,106 @@
-const userName = prompt("Hello, ¿What's your name?");
+const trips = []; // Array which stores the list of selected destinations
+const resultsContainer = document.querySelector('#results');
 
-const budgetInput = document.querySelector('#budget');
-const foodInput = document.querySelector('#food');
+// Get the las best trip and show it in the HTML
+function init() {
+  const bestLastTrip = localStorage.getItem('bestTrip');
+  if (bestLastTrip) {
+    document.querySelector('h1 span').textContent = `The best last trip was ${bestLastTrip}`;
+  }
+  uploadCountries();
+}
+init();
 
-const showMeBtn = document.querySelector('#travel');
-const result = document.querySelector('#result');
+// Load the JSON and insert every country in the destination selector
+async function uploadCountries() {
+  const response = await fetch('./countries.json');
+  const countries = await response.json();
 
-const destInput1 = document.querySelector('#destination1');
-const destInput2 = document.querySelector('#destination2');
-const destInput3 = document.querySelector('#destination3');
-
-const transInput1 = document.querySelector('#transport1');
-const transInput2 = document.querySelector('#transport2');
-const transInput3 = document.querySelector('#transport3');
-
-const accomInput1 = document.querySelector('#accommodation1');
-const accomInput2 = document.querySelector('#accommodation2');
-const accomInput3 = document.querySelector('#accommodation3');
-
-const destination1 = {
-  destination: '',
-  transport: 0,
-  accommodation: 0,
-  total: 0,
-};
-
-const destination2 = {
-  destination: '',
-  transport: 0,
-  accommodation: 0,
-  total: 0,
-};
-
-const destination3 = {
-  destination: '',
-  transport: 0,
-  accommodation: 0,
-  total: 0,
-};
-
-function addExpenses(expenses) {
-  return expenses[0] + expenses[1] + expenses[2];
+  countries.forEach(country => {
+    const option = document.createElement('option');
+    option.value = country.name;
+    option.textContent = country.name;
+    document.querySelector('select').insertAdjacentElement('beforeend', option);
+  });
 }
 
-function getLessCost(exp1, exp2, exp3) {
-  let lessCost = exp1;
-
-  if (exp1 > exp2) {
-    lessCost = exp2;
+// Create a destination with its properties and methods to calculate taxes
+class Destination {
+  constructor(destination, transport, accommodation) {
+    this.destination = destination;
+    this.transport = transport;
+    this.accommodation = accommodation;
   }
-  if (exp2 > exp3) {
-    lessCost = exp3;
+  getSubTotal() {
+    return +this.transport + +this.accommodation;
   }
-
-  return lessCost;
+  getTaxes() {
+    return +this.getSubTotal() >= 1000 ? +this.getSubTotal() * 0.2 : +this.getSubTotal() * 0.15;
+  }
+  getTotal() {
+    return this.getSubTotal() + this.getTaxes();
+  }
 }
 
-showMeBtn.addEventListener('click', function (e) {
+// Create the HTML markup for every destination
+function createMarkup(trips) {
+  const results = trips
+    .map(trip => {
+      const { destination, transport, accommodation } = trip;
+      const markup = `
+        <div class="result">
+          <h2>${destination}</h2>
+          <p>Transport: $${transport}</p>
+          <p>Accommodation: $${accommodation}</p>
+        </div>
+    `;
+      return markup;
+    })
+    .join('');
+  return results;
+}
+
+// Shows the created destination in the HTML
+function updateTrips(trips) {
+  resultsContainer.innerHTML = '';
+  resultsContainer.insertAdjacentHTML('beforeend', createMarkup(trips));
+}
+
+// From an array of possible trips, choose the cheapest one and show it in the HTML
+// Also stores that destination in the Local Storage
+function getBestTrip(trips) {
+  if (trips.length > 0) {
+    const sortedTrips = trips.sort(function (a, b) {
+      return a.getTotal() - b.getTotal();
+    });
+
+    const bestTrip = sortedTrips[0];
+
+    resultsContainer.innerHTML = `The best place to go is ${bestTrip.destination}! The total price for this one is $${bestTrip.getTotal()} including taxes($${bestTrip.getTaxes()})`;
+
+    localStorage.setItem('bestTrip', bestTrip.destination);
+  } else {
+    resultsContainer.innerHTML = `There are no possible trips with this budget`;
+  }
+}
+
+// Create an object from the form values and use it to create a destination object
+document.querySelector('form').addEventListener('submit', function (e) {
   e.preventDefault();
 
-  destination1.destination = destInput1.value;
-  destination1.transport = +transInput1.value;
-  destination1.accommodation = +accomInput1.value;
+  const data = Object.fromEntries([...new FormData(this)]);
+  const { destination, transport, accommodation } = data;
+  
+  const trip = new Destination(destination, transport, accommodation);
 
-  destination2.destination = destInput2.value;
-  destination2.transport = +transInput2.value;
-  destination2.accommodation = +accomInput2.value;
+  trips.push(trip);
+  updateTrips(trips);
+  this.querySelectorAll('input').forEach(input => (input.value = ''));
+});
 
-  destination3.destination = destInput3.value;
-  destination3.transport = +transInput3.value;
-  destination3.accommodation = +accomInput3.value;
-
-  const destination1Exps = [+food.value, destination1.transport, destination1.accommodation];
-  const destination2Exps = [+food.value, destination2.transport, destination2.accommodation];
-  const destination3Exps = [+food.value, destination3.transport, destination3.accommodation];
-
-  destination1.total = addExpenses(destination1Exps);
-  destination2.total = addExpenses(destination2Exps);
-  destination3.total = addExpenses(destination3Exps);
-
-  const lessBudgetOption = getLessCost(destination1.total, destination2.total, destination3.total);
-
-  console.log(destination1, destination2, destination3);
-
-  const lowestCostDestination = [destination1, destination2, destination3].find(dest => {
-    return dest.destination && dest.total <= +budgetInput.value;
-  });
-
-  console.log(lowestCostDestination);
-
-  if (lowestCostDestination) {
-    result.textContent = `${userName}, the best place to go is ${lowestCostDestination.destination} and you will still have $${+budgetInput.value - lowestCostDestination.total}`;
-  } else {
-    result.textContent = `We are very sorry ${userName}, there are no places you can go`;
-  }
+// Create an array with the possible destinations
+document.querySelector('#find').addEventListener('click', function () {
+  const budget = document.querySelector('#budget');
+  const possibleTrips = trips.filter(trip => trip.getTotal() <= +budget.value);
+  getBestTrip(possibleTrips);
 });
